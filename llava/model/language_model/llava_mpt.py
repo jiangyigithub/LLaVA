@@ -36,7 +36,8 @@ class LlavaMptModel(LlavaMetaModel, MptModel):
     def embed_tokens(self, x):
         return self.wte(x)
 
-
+# 1 模型初始化
+# 语言模型 self.transformer 直接使用了 transformer 库中的 MptModel
 class LlavaMptForCausalLM(MptForCausalLM, LlavaMetaForCausalLM):
     config_class = LlavaMptConfig
     supports_gradient_checkpointing = True
@@ -56,7 +57,7 @@ class LlavaMptForCausalLM(MptForCausalLM, LlavaMetaForCausalLM):
     def _set_gradient_checkpointing(self, module, value=False):
         if isinstance(module, LlavaMptModel):
             module.gradient_checkpointing = value
-
+    # 3 推理过程
     def forward(
         self,
         input_ids: Optional[torch.LongTensor] = None,
@@ -69,7 +70,7 @@ class LlavaMptForCausalLM(MptForCausalLM, LlavaMetaForCausalLM):
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
         images=None):
-
+        # to process the multimodal inputs
         input_ids, attention_mask, past_key_values, inputs_embeds, labels = self.prepare_inputs_labels_for_multimodal(input_ids, attention_mask, past_key_values, labels, images)
         
         return super().forward(

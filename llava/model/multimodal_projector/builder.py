@@ -35,7 +35,8 @@ def build_vision_projector(config, delay_load=False, **kwargs):
 
     if projector_type == 'linear':
         return nn.Linear(config.mm_hidden_size, config.hidden_size)
-
+    # Projector 初始化
+    # 使用了 2 层 MLP 层作为Projector层
     mlp_gelu_match = re.match(r'^mlp(\d+)x_gelu$', projector_type)
     if mlp_gelu_match:
         mlp_depth = int(mlp_gelu_match.group(1))

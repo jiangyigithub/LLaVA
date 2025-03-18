@@ -287,7 +287,7 @@ A conversation between a user and an LLM-based AI assistant. The assistant gives
     sep_style=SeparatorStyle.MPT,
     sep="<|im_end|>",
 )
-
+# 预训练对话模板：
 conv_llava_plain = Conversation(
     system="",
     roles=("", ""),
@@ -321,7 +321,7 @@ conv_llava_v0_mmtag = Conversation(
     sep="###",
     version="v0_mmtag",
 )
-
+# 指令微调对话模板
 conv_llava_v1 = Conversation(
     system="A chat between a curious human and an artificial intelligence assistant. "
            "The assistant gives helpful, detailed, and polite answers to the human's questions.",

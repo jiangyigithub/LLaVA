@@ -410,7 +410,7 @@ def preprocess_llama_2(
         labels=targets,
     )
 
-
+# 指令微调阶段预处理方式
 def preprocess_v1(
     sources,
     tokenizer: transformers.PreTrainedTokenizer,
@@ -584,7 +584,7 @@ def preprocess_mpt(
         labels=targets,
     )
 
-
+# 预训练预处理方式
 def preprocess_plain(
     sources: Sequence[str],
     tokenizer: transformers.PreTrainedTokenizer,
@@ -685,6 +685,7 @@ class LazySupervisedDataset(Dataset):
         length_list = []
         for sample in self.list_data_dict:
             cur_len = sum(len(conv['value'].split()) for conv in sample['conversations'])
+            # 多模态数据用正数存储长度，纯文本用负数，模态区分
             cur_len = cur_len if 'image' in sample else -cur_len
             length_list.append(cur_len)
         return length_list
@@ -746,8 +747,10 @@ class DataCollatorForSupervisedDataset(object):
     tokenizer: transformers.PreTrainedTokenizer
 
     def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
+        # 按照keys将单独样本的各个类型的输入数据取出来打成batch
         input_ids, labels = tuple([instance[key] for instance in instances]
                                   for key in ("input_ids", "labels"))
+        # label和input_ids都需要pad到同样长度
         input_ids = torch.nn.utils.rnn.pad_sequence(
             input_ids,
             batch_first=True,
