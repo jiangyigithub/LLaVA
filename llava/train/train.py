@@ -779,9 +779,17 @@ class DataCollatorForSupervisedDataset(object):
 def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer,
                                 data_args) -> Dict:
     """Make dataset and collator for supervised fine-tuning."""
+    # 
+    # 类成员变量需要数据存储路径data_list以供__getitem__从中按照下标或者文件名提取对应样本。
+    # 对于LLaVA构建的视觉指令数据集，在磁盘里以.json格式存储，
+    # json文件中每一个条目为一条single image-conversation pair
     train_dataset = LazySupervisedDataset(tokenizer=tokenizer,
                                 data_path=data_args.data_path,
                                 data_args=data_args)
+    #
+    # 对于其中data_collator部分，其输入instance为上述Dataset定义的若干个dict输出组成的Sequence，
+    # 要将里面单独的样本组合成一个个batch的形式，以便并行处理，如每个样本单独的label，应该打成batch_label。
+    # 因此会先从每个dict中取出对应的input_ids和label，组成序列，然后pad成统一长度。
     data_collator = DataCollatorForSupervisedDataset(tokenizer=tokenizer)
     return dict(train_dataset=train_dataset,
                 eval_dataset=None,
@@ -958,7 +966,7 @@ def train(attn_implementation=None):
                 if hasattr(module, 'weight'):
                     if training_args.bf16 and module.weight.dtype == torch.float32:
                         module = module.to(torch.bfloat16)
-
+    # 数据集构建
     data_module = make_supervised_data_module(tokenizer=tokenizer,
                                               data_args=data_args)
     trainer = LLaVATrainer(model=model,

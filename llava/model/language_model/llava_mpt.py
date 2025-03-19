@@ -45,8 +45,8 @@ class LlavaMptForCausalLM(MptForCausalLM, LlavaMetaForCausalLM):
     def __init__(self, config):
         super(MptForCausalLM, self).__init__(config)
 
-        self.transformer = LlavaMptModel(config)
-        self.lm_head = torch.nn.Linear(config.hidden_size, config.vocab_size, bias=False)
+        self.transformer = LlavaMptModel(config) # 提取特征的feature extractor
+        self.lm_head = torch.nn.Linear(config.hidden_size, config.vocab_size, bias=False) # 用于预测token概率分布的lm_headm
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -72,7 +72,7 @@ class LlavaMptForCausalLM(MptForCausalLM, LlavaMetaForCausalLM):
         images=None):
         # to process the multimodal inputs
         input_ids, attention_mask, past_key_values, inputs_embeds, labels = self.prepare_inputs_labels_for_multimodal(input_ids, attention_mask, past_key_values, labels, images)
-        
+        # 调用父类的forward函数
         return super().forward(
             input_ids,
             past_key_values=past_key_values,

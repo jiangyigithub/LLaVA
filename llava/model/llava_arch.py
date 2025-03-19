@@ -25,7 +25,11 @@ from llava.constants import IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_PATCH
 
 from llava.mm_utils import get_anyres_image_grid_shape
 
-
+# LlavaMetaModel主要是负责图像分支的特征信息提取，涉及到图像具体处理代码。
+# 图像模态处理主要包括两个步骤，
+# 第一个是通过vision encoder去得到图像特征，
+# 第二个是用projector将图像特征进行对齐。
+# 所以内部要完成vision encoder的创建和projector的创建
 class LlavaMetaModel:
 
     def __init__(self, config):

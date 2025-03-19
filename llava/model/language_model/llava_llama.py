@@ -30,7 +30,10 @@ from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
 class LlavaConfig(LlamaConfig):
     model_type = "llava_llama"
 
-
+# LlavaLlamaModel 需要同时处理 视觉 LlavaMetaModel 和 文本 LlamaModel
+# 其中用于feature extractor的llm model对应的class为LlavaLlamaModel，
+# 仅作为一个抽象的组合类，组合文本和图像在进入llm之前的特征处理过程，该class继承了LlavaMetaModel和LlamaModel，
+# 其中LlavaMetaModel用于注入额外的图像分支处理逻辑到feature extract逻辑中。
 class LlavaLlamaModel(LlavaMetaModel, LlamaModel):
     config_class = LlavaConfig
 
@@ -43,7 +46,12 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
 
     def __init__(self, config):
         super(LlamaForCausalLM, self).__init__(config)
+        # Llama 主要处理文本，而 LlavaLlamaModel 负责文本 + 视觉特征提取，因此 LlavaLlamaForCausalLM 并不直接继承 LlavaLlamaModel，而是作为一个成员变量（组合）
         self.model = LlavaLlamaModel(config)
+        # 其继承了LlamaForCausalLM, LlavaMetaForCausalLM这两个类，
+        # 成员变量中主要包含用于处理输入提取特征的feature extractor
+        # 和用于预测token概率分布的lm_headm。由于有额外的图像模态输入，
+        
         self.pretraining_tp = config.pretraining_tp
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
@@ -53,7 +61,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
 
     def get_model(self):
         return self.model
-
+    # 重写了中的forward和generate函数。
     def forward(
         self,
         input_ids: torch.LongTensor = None,
